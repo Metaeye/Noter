@@ -5,16 +5,15 @@
     </a-menu>
     <a-space v-if="props.collapsed" size="medium" class="button-container">
         <NewButton />
-        <DelButton />
+        <DeleteButton />
     </a-space>
 </template>
 
 <script setup lang="ts">
 import { Message } from "@arco-design/web-vue";
 import { useMenuStore } from "../../stores/menu";
-// import { useContentStore } from "../../stores/content";
 import NewButton from "../Button/NewButton.vue";
-import DelButton from "../Button/DelButton.vue";
+import DeleteButton from "../Button/DeleteButton.vue";
 import Groups from "./Groups.vue";
 import Notes from "./Notes.vue";
 
