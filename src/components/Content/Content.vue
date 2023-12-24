@@ -1,7 +1,7 @@
 <template>
     <a-layout-content>
-        <ActivityDescription v-if="isEditingDescription" />
-        <ActivityList v-else :editingDescription="editingDescription" />
+        <ActivityDescription v-if="isEditing" :editing="editing" />
+        <ActivityList v-else :editing="editing" />
         {{ menuStore.root }}
         <!-- {{ isEditingDescription }} -->
     </a-layout-content>
@@ -15,9 +15,9 @@ import { useMenuStore } from "../../stores/menu";
 
 const menuStore = useMenuStore();
 
-const isEditingDescription = ref(false);
+const isEditing = ref(false);
 
-const editingDescription = () => {
-    isEditingDescription.value = true;
+const editing = (value: boolean) => {
+    isEditing.value = value;
 };
 </script>

@@ -12,7 +12,7 @@
 <script setup lang="ts">
 import { Message } from "@arco-design/web-vue";
 import { useMenuStore } from "../../stores/menu";
-import { useContentStore } from "../../stores/content";
+// import { useContentStore } from "../../stores/content";
 import NewButton from "../Button/NewButton.vue";
 import DelButton from "../Button/DelButton.vue";
 import Groups from "./Groups.vue";
@@ -27,15 +27,11 @@ const props = defineProps({
 
 const menuStore = useMenuStore();
 
-const contentStore = useContentStore();
+// const contentStore = useContentStore();
 
 const onClickMenuItem = (key: string) => {
-    const result: any = menuStore.find_in_root(key);
-    contentStore.setContent(
-        Object.keys(result).find((k) => k === "content") === undefined
-            ? undefined
-            : result["content"]
-    );
+    const value = menuStore.find_in_root(key);
+    menuStore.curNote = Object.keys(value).includes("contents") ? value : undefined;
     Message.info({ content: `You select ${key}`, showIcon: true });
 };
 </script>

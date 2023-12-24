@@ -1,13 +1,55 @@
 <template>
     <a-layout style="height: 400px">
-        <a-layout-header>Header</a-layout-header>
         <a-layout-content>
-            <a-textarea
-                default-value="This is the contents of the textarea. This is the contents of the textarea. This is the contents of the textarea."
-                :auto-size="{ minRows: 5 }"
-                style="margin-top: 20px"
-            />
+            <a-space class="back-button">
+                <a-button type="outline" shape="round" @click="props.editing(false)">
+                    <template #icon>
+                        <icon-arrow-left />
+                    </template>
+                </a-button>
+            </a-space>
+            <a-typography :style="{ marginTop: '-40px' }">
+                <a-typography-title> {{ menuStore.curContent[0] }} </a-typography-title>
+                <a-typography-paragraph v-if="!isEditing" @click="isEditing = true">
+                    {{ menuStore.curContent[1] }}
+                </a-typography-paragraph>
+                <a-textarea
+                    v-else
+                    v-model="menuStore.curContent[1]"
+                    @blur="isEditing = false"
+                    :auto-size="{ minRows: 5 }"
+                    style="margin-top: 20px"
+                />
+            </a-typography>
         </a-layout-content>
         <a-layout-footer>Footer</a-layout-footer>
     </a-layout>
 </template>
+
+<script setup lang="ts">
+import { ref } from "vue";
+import { IconArrowLeft } from "@arco-design/web-vue/es/icon";
+// import { useContentStore } from "../../stores/content";
+import { useMenuStore } from "../../stores/menu";
+
+const props = defineProps({
+    editing: {
+        type: Function,
+        required: true,
+    },
+});
+
+// const contentStore = useContentStore();
+
+const menuStore = useMenuStore();
+
+const isEditing = ref(false);
+</script>
+
+<style scoped>
+.back-button {
+    position: relative;
+    top: 10px;
+    left: 20px;
+}
+</style>

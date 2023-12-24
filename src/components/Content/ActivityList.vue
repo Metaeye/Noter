@@ -1,22 +1,22 @@
 <template>
-    <a-list>
-        <a-list-item v-for="(value, i) in contentStore.content" :key="i">
+    <a-list v-if="menuStore.curNote">
+        <a-list-item v-for="(value, i) in menuStore.curNote.contents" :key="i">
             <a-list-item-meta :title="value[0]" :description="value[1]" />
             <template #actions>
-                <icon-edit @click="editingDescription" />
-                <icon-delete @click="contentStore.removeActivity(i)" />
+                <icon-edit @click="beforeEdit(value)" />
+                <icon-delete @click="menuStore.removeContent(menuStore.curNote, i)" />
             </template>
         </a-list-item>
-        <a-list-item v-if="contentStore.content">
+        <a-list-item>
             <a-space size="medium">
                 <a-input
                     :style="{ width: '320px' }"
                     placeholder="Please enter something"
                     allow-clear
-                    v-model="inputActivity"
-                    @press-enter="pushActivity"
+                    v-model="inputContent"
+                    @press-enter="pushContent"
                 />
-                <a-button type="primary" shape="round" @click="pushActivity">
+                <a-button type="primary" shape="round" @click="pushContent">
                     <span><icon-plus /></span>
                 </a-button>
             </a-space>
@@ -25,26 +25,28 @@
 </template>
 
 <script setup lang="ts">
-import { IconDelete, IconEdit, IconPlus } from "@arco-design/web-vue/es/icon";
-import { useContentStore } from "../../stores/content";
 import { ref } from "vue";
+import { useMenuStore } from "../../stores/menu";
+import { IconDelete, IconEdit, IconPlus } from "@arco-design/web-vue/es/icon";
 
 const props = defineProps({
-    editingDescription: {
+    editing: {
         type: Function,
         required: true,
     },
 });
 
-const contentStore = useContentStore();
-const inputActivity = ref("");
+const menuStore = useMenuStore();
 
-const pushActivity = () => {
-    contentStore.pushActivity(inputActivity.value);
-    inputActivity.value = "";
+const inputContent = ref("");
+
+const pushContent = () => {
+    menuStore.pushContent(menuStore.curNote, [inputContent.value, "description"]);
+    inputContent.value = "";
 };
 
-const editingDescription = () => {
-    props.editingDescription();
+const beforeEdit = (content: string[]) => {
+    menuStore.curContent = content;
+    props.editing(true);
 };
 </script>

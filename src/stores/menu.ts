@@ -12,7 +12,7 @@ const initialize = async (root: any) => {
                 "key": "1703339815803139800",
                 "parent": "root",
                 "title": "gift",
-                "content": [
+                "contents": [
                     ["activity1", "description1"],
                     ["activity2", "description2"]
                 ]
@@ -27,7 +27,7 @@ const initialize = async (root: any) => {
                         "key": "1703339815803137800",
                         "parent": "1703339815803137900",
                         "title": "math",
-                        "content": [
+                        "contents": [
                             ["activity1", "description1"],
                             ["activity2", "description2"]
                         ]
@@ -42,7 +42,7 @@ const initialize = async (root: any) => {
                                 "key": "1703339815803135000",
                                 "parent": "1703339815803135200",
                                 "title": "algebra",
-                                "content": [
+                                "contents": [
                                     ["activity1", "description1"],
                                     ["activity2", "description2"]
                                 ]
@@ -57,7 +57,7 @@ const initialize = async (root: any) => {
                                         "key": "1703339815803119900",
                                         "parent": "1703339815803122800",
                                         "title": "add",
-                                        "content": [
+                                        "contents": [
                                             ["activity1", "description1"],
                                             ["activity2", "description2"]
                                         ]
@@ -131,6 +131,9 @@ export const useMenuStore = defineStore("menu", () => {
     const root: any = ref();
     initialize(root);
 
+    const curNote = ref();
+    const curContent = ref();
+
     const groupList = ref(toList(toTree(root.value)));
 
     const find_in_root = (key: string) => {
@@ -160,7 +163,7 @@ export const useMenuStore = defineStore("menu", () => {
             key,
             parent,
             title,
-            content: [],
+            contents: [],
         };
     };
 
@@ -184,5 +187,25 @@ export const useMenuStore = defineStore("menu", () => {
         }
     };
 
-    return { root, groupList, find_in_root, pushNote, pushGroup, remove, children };
+    const pushContent = (note: any, content: string[]) => {
+        note.contents.push(content);
+    };
+
+    const removeContent = (note: any, index: number) => {
+        note.contents.splice(index, 1);
+    };
+
+    return {
+        root,
+        groupList,
+        curNote,
+        curContent,
+        find_in_root,
+        pushNote,
+        pushGroup,
+        remove,
+        children,
+        pushContent,
+        removeContent,
+    };
 });
