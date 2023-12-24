@@ -1,7 +1,7 @@
 <template>
     <a-layout-content>
-        <ActivityDescription v-if="isEditing" :editing="editing" />
-        <ActivityList v-else :editing="editing" />
+        <Description v-if="isEditing" :editing="editing" />
+        <NoteContents v-else :editing="editing" />
         {{ menuStore.root }}
         <!-- {{ isEditingDescription }} -->
     </a-layout-content>
@@ -9,8 +9,8 @@
 
 <script setup lang="ts">
 import { ref } from "vue";
-import ActivityList from "./ActivityList.vue";
-import ActivityDescription from "./ActivityDescription.vue";
+import Description from "./Description.vue";
+import NoteContents from "./NoteContents.vue";
 import { useMenuStore } from "../../stores/menu";
 
 const menuStore = useMenuStore();
