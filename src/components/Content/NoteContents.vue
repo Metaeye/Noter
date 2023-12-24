@@ -1,7 +1,7 @@
 <template>
     <a-list v-if="menuStore.curNote">
         <a-list-item v-for="(value, i) in menuStore.curNote.contents" :key="i">
-            <a-list-item-meta :title="value[0]" :description="value[1]" />
+            <a-list-item-meta :title="value[0]" :description="description(value[1])" />
             <template #actions>
                 <icon-edit @click="beforeEdit(value)" />
                 <icon-delete @click="menuStore.removeContent(menuStore.curNote, i)" />
@@ -39,6 +39,10 @@ const props = defineProps({
 const menuStore = useMenuStore();
 
 const inputContent = ref("");
+
+const description = (origin: string): string => {
+    return [origin.substring(0, 50), "..."].join("");
+};
 
 const pushContent = () => {
     menuStore.pushContent(menuStore.curNote, [inputContent.value, "description"]);

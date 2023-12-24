@@ -145,13 +145,13 @@ export const useMenuStore = defineStore("menu", () => {
         Object.values(parent.notes).forEach((note: any) => {
             children.push({
                 key: note.key,
-                title: "notes/" + note.title,
+                title: ["notes", note.title].join("/"),
             });
         });
         Object.values(parent.groups).forEach((group: any) => {
             children.push({
                 key: group.key,
-                title: "groups/" + group.title,
+                title: ["groups", group.title].join("/"),
             });
         });
         return children;
@@ -165,6 +165,7 @@ export const useMenuStore = defineStore("menu", () => {
             title,
             contents: [],
         };
+        // todo: send notes to backend to save
     };
 
     const pushGroup = (parent: string, title: string) => {
@@ -176,6 +177,7 @@ export const useMenuStore = defineStore("menu", () => {
             groups: {},
         };
         groupList.value = toList(toTree(root.value));
+        // todo: send groups to backend to save
     };
 
     const remove = (parent: string, key: string) => {
@@ -185,14 +187,17 @@ export const useMenuStore = defineStore("menu", () => {
         } else if (node.groups[key]) {
             delete node.groups[key];
         }
+        // todo: send notes or groups to backend to save
     };
 
     const pushContent = (note: any, content: string[]) => {
         note.contents.push(content);
+        // todo: send contents to backend to save
     };
 
     const removeContent = (note: any, index: number) => {
         note.contents.splice(index, 1);
+        // todo: send contents to backend to save
     };
 
     return {
