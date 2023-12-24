@@ -159,13 +159,15 @@ export const useMenuStore = defineStore("menu", () => {
 
     const pushNote = (parent: string, title: string) => {
         const key = time_stamp();
-        find_in_root(parent).notes[key] = {
+        const value = {
             key,
             parent,
             title,
             contents: [],
         };
+        find_in_root(parent).notes[key] = value;
         // todo: send notes to backend to save
+        
     };
 
     const pushGroup = (parent: string, title: string) => {

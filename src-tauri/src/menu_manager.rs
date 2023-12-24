@@ -1,50 +1,10 @@
 use std::collections::HashMap;
-use std::time::{ SystemTime, UNIX_EPOCH };
 use serde::{ Deserialize, Serialize };
+use crate::group::Group;
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct Note {
-    key: String,
-    parent: String,
-    title: String,
-    content: Vec<(String, String)>,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct Group {
-    key: String,
-    title: String,
-    notes: HashMap<String, Note>,
-    groups: HashMap<String, Group>,
-}
-
 pub struct MenuManager {
     root: Group,
-}
-
-impl Note {
-    pub fn new(key: String, parent: String, title: String, content: Vec<(String, String)>) -> Self {
-        Self { key, parent, title, content }
-    }
-}
-
-impl Group {
-    fn new(
-        key: String,
-        title: String,
-        notes: HashMap<String, Note>,
-        groups: HashMap<String, Group>
-    ) -> Self {
-        Self { key, title, notes, groups }
-    }
-
-    fn add_group(&mut self, key: String, group: Group) {
-        self.groups.insert(key, group);
-    }
-
-    fn add_note(&mut self, key: String, note: Note) {
-        self.notes.insert(key, note);
-    }
 }
 
 impl Default for MenuManager {
@@ -65,63 +25,117 @@ impl MenuManager {
         Self::default()
     }
 
+    pub fn push_content(&mut self, parent: &str, json: String) {
+        self.root.get_mut_note(parent).unwrap().push_content(json);
+    }
+
+    pub fn remove_content(&mut self, parent: &str, index: usize) {
+        self.root.get_mut_note(parent).unwrap().remove_content(index);
+    }
+
+    pub fn insert_note(&mut self, parent: &str, key: String, json: String) {
+        self.root.get_mut_group(parent).unwrap().insert_note(key, json);
+    }
+
+    pub fn remove_note(&mut self, parent: &str, key: &str) {
+        self.root.get_mut_group(parent).unwrap().remove_note(key);
+    }
+
+    pub fn insert_group(&mut self, parent: &str, key: String, json: String) {
+        self.root.get_mut_group(parent).unwrap().insert_group(key, json);
+    }
+
+    pub fn remove_group(&mut self, parent: &str, key: &str) {
+        self.root.get_mut_group(parent).unwrap().remove_group(key);
+    }
+
+    pub fn serialize(&self) -> String {
+        String::from(&self.root)
+    }
+
+    pub fn deserialize(&mut self, json: String) {
+        self.root = Group::from(json);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::time::{ SystemTime, UNIX_EPOCH };
+    use crate::note::Note;
+
     fn time_stamp() -> String {
         SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_nanos().to_string()
     }
 
-    pub fn test_init_root(&mut self) {
-        let content = vec![
+    #[test]
+    fn test_menu_manager_insert_group() {
+        let mut menu_manager = MenuManager::new();
+        menu_manager.insert_group(
+            "root",
+            "key".to_string(),
+            r#"{"key": "key", "title": "title", "notes": {}, "groups": {}}"#.to_string()
+        );
+        assert_eq!(
+            menu_manager.serialize(),
+            r#"{"key":"root","title":"root","notes":{},"groups":{"key":{"key":"key","title":"title","notes":{},"groups":{}}}}"#.to_string()
+        );
+    }
+
+    #[test]
+    fn test_init_root() {
+        let contents = vec![
             ("activity1".to_string(), "description1".to_string()),
             ("activity2".to_string(), "description2".to_string())
         ];
 
         let mut notes = HashMap::new();
-        let key = MenuManager::time_stamp();
-        let parent = MenuManager::time_stamp();
+        let key = time_stamp();
+        let parent = time_stamp();
         notes.insert(
             key.clone(),
-            Note::new(key, parent.clone(), "add".to_string(), content.clone())
+            Note::new(key, parent.clone(), "add".to_string(), contents.clone())
         );
         let group_add = Group::new(parent, "add".to_string(), notes, HashMap::new());
 
         let mut notes = HashMap::new();
-        let key = MenuManager::time_stamp();
-        let parent = MenuManager::time_stamp();
+        let key = time_stamp();
+        let parent = time_stamp();
         notes.insert(
             key.clone(),
-            Note::new(key, parent.clone(), "algebra".to_string(), content.clone())
+            Note::new(key, parent.clone(), "algebra".to_string(), contents.clone())
         );
         let mut groups = HashMap::new();
-        groups.insert(group_add.key.clone(), group_add);
+        groups.insert(group_add.get_key().to_string(), group_add);
         let group_algebra = Group::new(parent, "algebra".to_string(), notes, groups);
 
         let mut notes = HashMap::new();
-        let key = MenuManager::time_stamp();
-        let parent = MenuManager::time_stamp();
+        let key = time_stamp();
+        let parent = time_stamp();
         notes.insert(
             key.clone(),
-            Note::new(key, parent.clone(), "math".to_string(), content.clone())
+            Note::new(key, parent.clone(), "math".to_string(), contents.clone())
         );
         let mut groups = HashMap::new();
-        groups.insert(group_algebra.key.clone(), group_algebra);
+        groups.insert(group_algebra.get_key().to_string(), group_algebra);
         let group_math = Group::new(parent, "math".to_string(), notes, groups);
 
         let note1 = Note::new(
-            MenuManager::time_stamp(),
+            time_stamp(),
             "root".to_string(),
             "gift".to_string(),
-            content.clone()
+            contents.clone()
         );
-        
-        self.root.add_note(note1.key.clone(), note1);
-        self.root.add_group(group_math.key.clone(), group_math);
-    }
 
-    pub fn serialize(&self) -> String {
-        serde_json::to_string(&self.root).unwrap()
-    }
+        let mut root = Group::new(
+            "root".to_string(),
+            "root".to_string(),
+            HashMap::new(),
+            HashMap::new()
+        );
+        root.insert_note(note1.get_key().to_string(), String::from(note1));
+        root.insert_group(group_math.get_key().to_string(), String::from(group_math));
 
-    pub fn deserialize(&mut self, json: String) {
-        self.root = serde_json::from_str(&json).unwrap();
+        // println!("{}", String::from(&root));
     }
 }

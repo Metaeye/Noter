@@ -4,17 +4,17 @@
 
 use noter::menu_manager::MenuManager;
 
-#[tauri::command]
-async fn initialize_menu() -> String {
-    let mut menu_manager = MenuManager::new();
-    menu_manager.test_init_root();
-    menu_manager.serialize()
-}
+// #[tauri::command]
+// async fn initialize_menu() -> String {
+//     let mut menu_manager = MenuManager::new();
+//     // menu_manager.test_init_root();
+//     menu_manager.serialize()
+// }
 
 fn main() {
     tauri::Builder
         ::default()
-        .invoke_handler(tauri::generate_handler![initialize_menu])
+        .invoke_handler(tauri::generate_handler![])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
