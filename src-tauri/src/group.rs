@@ -2,7 +2,7 @@ use std::collections::HashSet;
 use serde::{ Deserialize, Serialize };
 use sled::IVec;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize)]
 pub struct Group {
     name: String,
     note_keys: HashSet<String>,
@@ -18,8 +18,16 @@ impl Group {
         }
     }
 
-    pub fn get_title(&self) -> &String {
+    pub fn get_name(&self) -> &String {
         &self.name
+    }
+
+    pub fn get_note_keys(&self) -> &HashSet<String> {
+        &self.note_keys
+    }
+
+    pub fn get_group_keys(&self) -> &HashSet<String> {
+        &self.group_keys
     }
 
     pub fn insert_note_key(mut self, note_key: String) -> Self {

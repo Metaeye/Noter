@@ -1,6 +1,6 @@
 use std::time::{ SystemTime, UNIX_EPOCH };
 
-use crate::{ group::Group, note::Note };
+use crate::{ group::Group, note::Note, menu::Menu };
 
 pub struct Manager {
     db: sled::Db,
@@ -17,7 +17,7 @@ impl Default for Manager {
 }
 
 impl Manager {
-    pub fn new(db_path: String) -> Self {
+    pub fn new(db_path: &str) -> Self {
         let db = sled::open(db_path).expect("Failed to open database");
         let _root = db.open_tree("root").expect("Failed to open tree");
         Self { db }
@@ -28,6 +28,19 @@ impl Manager {
         let root_group = self.db.open_tree("groups").unwrap();
         root_group.clear().unwrap();
         let _ = root_group.insert("root", Group::new("root".to_string()));
+    }
+
+    pub fn get_menu(&self) -> String {
+        let root = Group::from(
+            self.db.open_tree("groups").unwrap().get("root").unwrap().unwrap()
+        );
+        let menu = Menu::new(
+            root,
+            "root",
+            &self.db.open_tree("groups").unwrap(),
+            &self.db.open_tree("notes").unwrap()
+        );
+        String::from(menu)
     }
 
     pub fn insert_note(&self, group_key: String, note_name: String) {
@@ -225,5 +238,15 @@ mod tests {
         print_groups(&manager);
         manager.remove_group(String::from("root"), last_group_key(&manager));
         print_groups(&manager);
+    }
+
+    #[test]
+    fn test_manager_menu() {
+        let manager = Manager::default();
+        manager.clear_db();
+        manager.insert_group(String::from("root"), "group1".to_string());
+        let key = last_group_key(&manager);
+        manager.insert_note(key.clone(), String::from("note1"));
+        println!("{}", manager.get_menu());
     }
 }

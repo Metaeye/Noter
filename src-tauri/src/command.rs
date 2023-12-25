@@ -7,6 +7,12 @@ lazy_static! {
 }
 
 #[tauri::command]
+pub async fn get_menu() -> String {
+    let manager = MANAGER.lock().unwrap();
+    manager.get_menu()
+}
+
+#[tauri::command]
 pub async fn insert_content(note_key: String, json: String) {
     let manager = MANAGER.lock().unwrap();
     manager.insert_note_content(note_key, json);

@@ -1,7 +1,7 @@
 use serde::{ Deserialize, Serialize };
 use sled::IVec;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize)]
 pub struct Note {
     name: String,
     contents: Vec<(String, String)>,

@@ -15,7 +15,8 @@ fn main() {
                 command::insert_note,
                 command::remove_note,
                 command::insert_group,
-                command::remove_group
+                command::remove_group,
+                command::get_menu
             ]
         )
         .run(tauri::generate_context!())
