@@ -1,22 +1,51 @@
 use serde::{ Deserialize, Serialize };
+use sled::IVec;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Note {
-    key: String,
-    parent: String,
-    title: String,
+    name: String,
     contents: Vec<(String, String)>,
+}
+
+impl Note {
+    pub fn new(name: String) -> Self {
+        Self {
+            name,
+            contents: Vec::new(),
+        }
+    }
+
+    pub fn get_title(&self) -> &String {
+        &self.name
+    }
+
+    pub fn get_contents(&self) -> &Vec<(String, String)> {
+        &self.contents
+    }
+
+    pub fn insert_content(mut self, json: String) -> Self {
+        self.contents.push(Note::json_to_content(&json));
+        self
+    }
+
+    pub fn update_content(mut self, index: usize, json: String) -> Self {
+        self.contents[index] = Note::json_to_content(&json);
+        self
+    }
+
+    pub fn remove_content(mut self, index: usize) -> Self {
+        self.contents.remove(index);
+        self
+    }
+
+    fn json_to_content(json: &str) -> (String, String) {
+        serde_json::from_str(json).unwrap()
+    }
 }
 
 impl From<String> for Note {
     fn from(json: String) -> Self {
         serde_json::from_str(&json).unwrap()
-    }
-}
-
-impl From<&Note> for String {
-    fn from(note: &Note) -> Self {
-        serde_json::to_string(&note).unwrap()
     }
 }
 
@@ -26,21 +55,15 @@ impl From<Note> for String {
     }
 }
 
-impl Note {
-    pub fn new(key: String, parent: String, title: String, content: Vec<(String, String)>) -> Self {
-        Self { key, parent, title, contents: content }
+impl From<Note> for IVec {
+    fn from(note: Note) -> Self {
+        String::from(note).into_bytes().into()
     }
+}
 
-    pub fn get_key(&self) -> &str {
-        &self.key
-    }
-
-    pub fn push_content(&mut self, json: String) {
-        self.contents.push(serde_json::from_str(&json).unwrap());
-    }
-
-    pub fn remove_content(&mut self, index: usize) {
-        self.contents.remove(index);
+impl From<IVec> for Note {
+    fn from(ivec: IVec) -> Self {
+        String::from_utf8(ivec.to_vec()).unwrap().into()
     }
 }
 
@@ -49,60 +72,19 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_note_from_string() {
-        let json =
-            r#"{
-            "key": "key",
-            "parent": "parent",
-            "title": "title",
-            "contents": [
-                ["key", "value"]
-            ]
-        }"#;
-        let note: Note = Note::from(json.to_string());
-        assert_eq!(note.key, "key");
-        assert_eq!(note.parent, "parent");
-        assert_eq!(note.title, "title");
-        assert_eq!(note.contents, vec![("key".to_string(), "value".to_string())]);
+    fn test_note_size() {
+        let note_size = std::mem::size_of::<Note>();
+        println!("Note size: {} bytes", note_size);
     }
 
     #[test]
-    fn test_note_to_string() {
-        let note = Note::new(
-            "key".to_string(),
-            "parent".to_string(),
-            "title".to_string(),
-            vec![("key".to_string(), "value".to_string())]
-        );
-        let json: String = note.into();
-        assert_eq!(
-            json,
-            r#"{"key":"key","parent":"parent","title":"title","contents":[["key","value"]]}"#
-        );
-    }
+    fn test_note() {
+        let db = sled::open("my_db").expect("Failed to open database");
+        let notes = db.open_tree("test_notes").expect("Failed to open tree");
+        let note = Note::new(String::from("note1"));
+        let note = note.insert_content(String::from(r#"["content1", "content2"]"#));
+        notes.insert("note1", IVec::from(note)).unwrap();
 
-    #[test]
-    fn test_string_to_contents() {
-        let json = r#"["activity","description"]"#;
-        let content: (String, String) = serde_json::from_str(json).unwrap();
-        assert_eq!(content, ("activity".to_string(), "description".to_string()));
-    }
-
-    #[test]
-    fn test_note_push_content() {
-        let mut note = Note::new(
-            "key".to_string(),
-            "parent".to_string(),
-            "title".to_string(),
-            vec![("key".to_string(), "value".to_string())]
-        );
-        note.push_content(r#"["activity","description"]"#.to_string());
-        assert_eq!(
-            note.contents,
-            vec![
-                ("key".to_string(), "value".to_string()),
-                ("activity".to_string(), "description".to_string())
-            ]
-        );
+        println!("{}", String::from(Note::from(notes.get("note1").unwrap().unwrap())));
     }
 }

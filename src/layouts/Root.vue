@@ -18,7 +18,6 @@
 
 <script setup lang="ts">
 import { ref } from "vue";
-// import { Message } from "@arco-design/web-vue";
 import Menu from "../components/Menu/Menu.vue";
 import Content from "../components/Content/Content.vue";
 

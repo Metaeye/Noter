@@ -26,8 +26,6 @@ const props = defineProps({
 
 const menuStore = useMenuStore();
 
-// const contentStore = useContentStore();
-
 const onClickMenuItem = (key: string) => {
     const value = menuStore.find_in_root(key);
     menuStore.curNote = Object.keys(value).includes("contents") ? value : undefined;

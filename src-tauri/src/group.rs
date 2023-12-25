@@ -1,24 +1,51 @@
-use std::collections::HashMap;
+use std::collections::HashSet;
 use serde::{ Deserialize, Serialize };
-use crate::note::Note;
+use sled::IVec;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Group {
-    key: String,
-    title: String,
-    notes: HashMap<String, Note>,
-    groups: HashMap<String, Group>,
+    name: String,
+    note_keys: HashSet<String>,
+    group_keys: HashSet<String>,
+}
+
+impl Group {
+    pub fn new(name: String) -> Self {
+        Self {
+            name,
+            note_keys: HashSet::new(),
+            group_keys: HashSet::new(),
+        }
+    }
+
+    pub fn get_title(&self) -> &String {
+        &self.name
+    }
+
+    pub fn insert_note_key(mut self, note_key: String) -> Self {
+        self.note_keys.insert(note_key);
+        self
+    }
+
+    pub fn remove_note_key(mut self, note_key: String) -> Self {
+        self.note_keys.remove(&note_key);
+        self
+    }
+
+    pub fn insert_group_key(mut self, group_key: String) -> Self {
+        self.group_keys.insert(group_key);
+        self
+    }
+
+    pub fn remove_group_key(mut self, group_key: String) -> Self {
+        self.group_keys.remove(&group_key);
+        self
+    }
 }
 
 impl From<String> for Group {
     fn from(json: String) -> Self {
         serde_json::from_str(&json).unwrap()
-    }
-}
-
-impl From<&Group> for String {
-    fn from(group: &Group) -> Self {
-        serde_json::to_string(&group).unwrap()
     }
 }
 
@@ -28,49 +55,15 @@ impl From<Group> for String {
     }
 }
 
-impl Group {
-    pub fn new(
-        key: String,
-        title: String,
-        notes: HashMap<String, Note>,
-        groups: HashMap<String, Group>
-    ) -> Self {
-        Self { key, title, notes, groups }
+impl From<Group> for IVec {
+    fn from(group: Group) -> Self {
+        String::from(group).into_bytes().into()
     }
+}
 
-    pub fn get_key(&self) -> &str {
-        &self.key
-    }
-
-    pub fn insert_note(&mut self, key: String, json: String) {
-        self.notes.insert(key, Note::from(json));
-    }
-
-    pub fn remove_note(&mut self, key: &str) {
-        self.notes.remove(key);
-    }
-
-    pub fn insert_group(&mut self, key: String, json: String) {
-        self.groups.insert(key, Group::from(json));
-    }
-
-    pub fn remove_group(&mut self, key: &str) {
-        self.groups.remove(key);
-    }
-
-    pub fn get_mut_group(&mut self, key: &str) -> Option<&mut Group> {
-        if self.key == key {
-            return Some(self);
-        }
-        self.groups.iter_mut().find_map(|(_, group)| group.get_mut_group(key))
-    }
-
-    pub fn get_mut_note(&mut self, key: &str) -> Option<&mut Note> {
-        let cur_result = self.notes.iter_mut().find(|(_, note)| note.get_key() == key);
-        match cur_result {
-            Some((_, note)) => Some(note),
-            None => self.groups.iter_mut().find_map(|(_, group)| group.get_mut_note(key)),
-        }
+impl From<IVec> for Group {
+    fn from(ivec: IVec) -> Self {
+        String::from_utf8(ivec.to_vec()).unwrap().into()
     }
 }
 
@@ -79,152 +72,8 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_group_from_string() {
-        let json =
-            r#"{
-            "key": "key",
-            "title": "title",
-            "notes": {
-                "key": {
-                    "key": "key",
-                    "parent": "parent",
-                    "title": "title",
-                    "contents": [
-                        ["key", "value"]
-                    ]
-                }
-            },
-            "groups": {
-                "key": {
-                    "key": "key",
-                    "title": "title",
-                    "notes": {},
-                    "groups": {}
-                }
-            }
-        }"#;
-        let group: Group = Group::from(json.to_string());
-        assert_eq!(group.key, "key");
-        assert_eq!(group.title, "title");
-        assert_eq!(group.notes.len(), 1);
-        assert_eq!(group.groups.len(), 1);
-    }
-
-    #[test]
-    fn test_group_to_string() {
-        let group = Group::new(
-            "key".to_string(),
-            "title".to_string(),
-            HashMap::new(),
-            HashMap::new()
-        );
-        let json = String::from(&group);
-        assert_eq!(json, r#"{"key":"key","title":"title","notes":{},"groups":{}}"#);
-    }
-
-    #[test]
-    fn test_group_insert_note() {
-        let mut group = Group::new(
-            "key".to_string(),
-            "title".to_string(),
-            HashMap::new(),
-            HashMap::new()
-        );
-        let json =
-            r#"{
-            "key": "key",
-            "parent": "parent",
-            "title": "title",
-            "contents": [
-                ["key", "value"]
-            ]
-        }"#;
-        group.insert_note("key".to_string(), json.to_string());
-        assert_eq!(group.notes.len(), 1);
-    }
-
-    #[test]
-    fn test_group_remove_note() {
-        let mut group = Group::new(
-            "key".to_string(),
-            "title".to_string(),
-            HashMap::new(),
-            HashMap::new()
-        );
-        let json =
-            r#"{
-            "key": "key",
-            "parent": "parent",
-            "title": "title",
-            "contents": [
-                ["key", "value"]
-            ]
-        }"#;
-        group.insert_note("key".to_string(), json.to_string());
-        group.remove_note("key");
-        assert_eq!(group.notes.len(), 0);
-    }
-
-    #[test]
-    fn test_group_insert_group() {
-        let mut group = Group::new(
-            "key".to_string(),
-            "title".to_string(),
-            HashMap::new(),
-            HashMap::new()
-        );
-        let json = r#"{"key":"key","title":"title","notes":{},"groups":{}}"#;
-        group.insert_group("key".to_string(), json.to_string());
-        assert_eq!(group.groups.len(), 1);
-    }
-
-    #[test]
-    fn test_group_remove_group() {
-        let mut group = Group::new(
-            "key".to_string(),
-            "title".to_string(),
-            HashMap::new(),
-            HashMap::new()
-        );
-        let json = r#"{"key":"key","title":"title","notes":{},"groups":{}}"#;
-        group.insert_group("key".to_string(), json.to_string());
-        group.remove_group("key");
-        assert_eq!(group.groups.len(), 0);
-    }
-
-    #[test]
-    fn test_group_get_mut_group() {
-        let mut group = Group::new(
-            "key".to_string(),
-            "title".to_string(),
-            HashMap::new(),
-            HashMap::new()
-        );
-        let json = r#"{"key":"key","title":"title","notes":{},"groups":{}}"#;
-        group.insert_group("key".to_string(), json.to_string());
-        let result = group.get_mut_group("key");
-        assert_eq!(result.unwrap().key, "key");
-    }
-
-    #[test]
-    fn test_group_get_mut_note() {
-        let mut group = Group::new(
-            "key".to_string(),
-            "title".to_string(),
-            HashMap::new(),
-            HashMap::new()
-        );
-        let json =
-            r#"{
-            "key": "key",
-            "parent": "parent",
-            "title": "title",
-            "contents": [
-                ["key", "value"]
-            ]
-        }"#;
-        group.insert_note("key".to_string(), json.to_string());
-        let result = group.get_mut_note("key");
-        assert_eq!(result.unwrap().get_key(), "key");
+    fn test_group_size() {
+        let group_size = std::mem::size_of::<Group>();
+        println!("Group size: {} bytes", group_size);
     }
 }

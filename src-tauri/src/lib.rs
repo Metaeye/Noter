@@ -1,3 +1,3 @@
-pub mod menu_manager;
 mod note;
 mod group;
+pub mod manager;
