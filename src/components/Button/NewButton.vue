@@ -10,7 +10,7 @@
     >
         <a-form :model="form">
             <a-form-item field="title" label="Title">
-                <a-input v-model="form.title" />
+                <a-input v-model="form.name" />
             </a-form-item>
             <a-form-item field="type" label="Type">
                 <a-select v-model="form.type">
@@ -40,7 +40,7 @@ const menuStore = useMenuStore();
 const visible = ref(false);
 
 const form = ref({
-    title: "",
+    name: "",
     type: "",
     level: "",
 });
@@ -57,18 +57,27 @@ const handleClick = async () => {
     groupPaths.value = JSON.parse(await invoke<string>("get_group_paths"));
 };
 
-const handleBeforeOk = (done: Function) => {
+const handleBeforeOk = async (done: Function) => {
+    visible.value = false;
     switch (form.value.type) {
         case "note": {
-            menuStore.pushNote(form.value.level, form.value.title);
+            // menuStore.pushNote(form.value.level, form.value.title);
+            await invoke("insert_note", {
+                group_key: form.value.level,
+                note_name: form.value.name,
+            });
             break;
         }
         case "group": {
-            menuStore.pushGroup(form.value.level, form.value.title);
+            // menuStore.pushGroup(form.value.level, form.value.title);
+            await invoke("insert_group", {
+                parent_group_key: form.value.level,
+                group_name: form.value.name,
+            });
             break;
         }
     }
-    visible.value = false;
+    menuStore.get_menu();
     done();
 };
 
