@@ -31,7 +31,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref } from "vue";
+import { ref } from "vue";
 import { IconDelete } from "@arco-design/web-vue/es/icon";
 import { useMenuStore } from "../../stores/menu";
 
@@ -39,17 +39,19 @@ const menuStore = useMenuStore();
 
 const visible = ref(false);
 
-const form = reactive({
+const form = ref({
     level: "root",
-    title: "root",
+    title: "",
 });
+
+
 
 const handleClick = () => {
     visible.value = true;
 };
 
 const handleBeforeOk = (done: Function) => {
-    menuStore.remove(form.level, form.title);
+    menuStore.remove(form.value.level, form.value.title);
     visible.value = false;
     done();
 };

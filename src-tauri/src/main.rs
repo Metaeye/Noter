@@ -2,21 +2,23 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 
-mod command;
+mod cmd;
 
 fn main() {
     tauri::Builder
         ::default()
         .invoke_handler(
             tauri::generate_handler![
-                command::insert_content,
-                command::remove_content,
-                command::update_content,
-                command::insert_note,
-                command::remove_note,
-                command::insert_group,
-                command::remove_group,
-                command::get_menu
+                cmd::insert_content,
+                cmd::remove_content,
+                cmd::update_content,
+                cmd::insert_note,
+                cmd::remove_note,
+                cmd::insert_group,
+                cmd::remove_group,
+                cmd::get_menu,
+                cmd::get_group_items,
+                cmd::get_group_paths
             ]
         )
         .run(tauri::generate_context!())

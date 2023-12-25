@@ -1,10 +1,10 @@
 <template>
-    <a-sub-menu v-for="group in props.groups" :key="group.key">
+    <a-sub-menu v-for="submenu in props.menu" :key="submenu.key">
         <template #title>
-            <span title="Title"><icon-folder />{{ group.title }}</span>
+            <span title="Title"><icon-folder />{{ submenu.title }}</span>
         </template>
-        <Notes :notes="group.notes" />
-        <Groups :groups="group.groups" />
+        <Notes :items="submenu.items" />
+        <Groups :menu="submenu.submenus" />
     </a-sub-menu>
 </template>
 
@@ -13,7 +13,7 @@ import { IconFolder } from "@arco-design/web-vue/es/icon";
 import Notes from "./Notes.vue";
 
 const props = defineProps({
-    groups: {
+    menu: {
         type: Object,
         default: [],
     },

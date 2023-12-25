@@ -20,8 +20,8 @@
             </a-form-item>
             <a-form-item field="level" label="Level">
                 <a-select v-model="form.level">
-                    <a-option v-for="group in menuStore.groupList" :value="group.key">
-                        {{ group.title }}
+                    <a-option v-for="groupPath in groupPaths" :value="groupPath.key">
+                        {{ groupPath.path }}
                     </a-option>
                 </a-select>
             </a-form-item>
@@ -30,32 +30,41 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref } from "vue";
+import { ref } from "vue";
 import { IconPlus } from "@arco-design/web-vue/es/icon";
 import { useMenuStore } from "../../stores/menu";
+import { invoke } from "@tauri-apps/api";
 
 const menuStore = useMenuStore();
 
 const visible = ref(false);
 
-const form = reactive({
+const form = ref({
     title: "",
     type: "",
     level: "",
 });
 
-const handleClick = () => {
+const groupPaths = ref([
+    {
+        key: "",
+        path: "",
+    },
+]);
+
+const handleClick = async () => {
     visible.value = true;
+    groupPaths.value = JSON.parse(await invoke<string>("get_group_paths"));
 };
 
 const handleBeforeOk = (done: Function) => {
-    switch (form.type) {
+    switch (form.value.type) {
         case "note": {
-            menuStore.pushNote(form.level, form.title);
+            menuStore.pushNote(form.value.level, form.value.title);
             break;
         }
         case "group": {
-            menuStore.pushGroup(form.level, form.title);
+            menuStore.pushGroup(form.value.level, form.value.title);
             break;
         }
     }

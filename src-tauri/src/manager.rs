@@ -1,6 +1,7 @@
 use std::time::{ SystemTime, UNIX_EPOCH };
+use sled::Tree;
 
-use crate::{ group::Group, note::Note, menu::Menu };
+use crate::{ group::Group, note::Note, menu::{ Menu, MenuItem } };
 
 pub struct Manager {
     db: sled::Db,
@@ -8,7 +9,7 @@ pub struct Manager {
 
 impl Default for Manager {
     fn default() -> Self {
-        let db = sled::open("db/default_db").expect("Failed to open database");
+        let db = sled::open("../db/default_db").expect("Failed to open database");
         let _ = db.open_tree("notes").expect("Failed to open tree");
         let root_group = db.open_tree("groups").expect("Failed to open tree");
         let _ = root_group.insert("root", Group::new("root".to_string()));
@@ -31,16 +32,30 @@ impl Manager {
     }
 
     pub fn get_menu(&self) -> String {
-        let root = Group::from(
-            self.db.open_tree("groups").unwrap().get("root").unwrap().unwrap()
-        );
+        let root = Group::from(self.db.open_tree("groups").unwrap().get("root").unwrap().unwrap());
         let menu = Menu::new(
             root,
             "root",
             &self.db.open_tree("groups").unwrap(),
             &self.db.open_tree("notes").unwrap()
         );
+
         String::from(menu)
+    }
+
+    // didn't test
+    pub fn get_groups(&self) -> String {
+        let groups = self.db
+            .open_tree("groups")
+            .unwrap()
+            .iter()
+            .map(|r| {
+                let (_, group) = r.unwrap();
+                String::from(Group::from(group))
+            })
+            .collect::<Vec<String>>();
+
+        format!("[{}]", groups.join(","))
     }
 
     pub fn insert_note(&self, group_key: String, note_name: String) {
@@ -98,6 +113,56 @@ impl Manager {
         let new_group = old_group.remove_group_key(key.clone());
         groups.insert(parent_group_key, new_group).unwrap();
         groups.remove(key).unwrap();
+    }
+
+    // didn't test
+    pub fn get_group_items(&self, group_key: String) -> String {
+        let groups = self.db.open_tree("groups").expect("Failed to open tree");
+        let notes = self.db.open_tree("notes").expect("Failed to open tree");
+        let group = Group::from(groups.get(group_key).unwrap().unwrap());
+        let note_items = group
+            .get_note_keys()
+            .iter()
+            .map(|key| {
+                let note = Note::from(notes.get(key).unwrap().unwrap());
+                String::from(MenuItem::new(key.to_string(), note.get_title().to_string()))
+            })
+            .collect::<Vec<String>>();
+        let group_items = group
+            .get_group_keys()
+            .iter()
+            .map(|key| {
+                let group = Group::from(groups.get(key).unwrap().unwrap());
+                String::from(MenuItem::new(key.to_string(), group.get_name().to_string()))
+            })
+            .collect::<Vec<String>>();
+
+        format!("[{}]", [note_items, group_items].concat().join(","))
+    }
+
+    // didn't test
+    pub fn get_group_paths(&self) -> String {
+        fn traverse_tree(group_key: &str, path: &str, groups: &Tree) -> Vec<String> {
+            let group = Group::from(groups.get(group_key).unwrap().unwrap());
+            let current_path = if path.is_empty() {
+                String::from("root")
+            } else {
+                format!("{}/{}", path, group.get_name())
+            };
+            let menu_levels = group
+                .get_group_keys()
+                .iter()
+                .flat_map(|key| traverse_tree(key, &current_path, groups))
+                .collect::<Vec<_>>();
+
+            [
+                vec![format!(r#"{{"key":"{}","path":"{}"}}"#, group_key, current_path)],
+                menu_levels,
+            ].concat()
+        }
+        let groups = self.db.open_tree("groups").expect("Failed to open tree");
+
+        format!("[{}]", traverse_tree("root", "", &groups).join(","))
     }
 
     fn time_stamp() -> String {
@@ -248,5 +313,15 @@ mod tests {
         let key = last_group_key(&manager);
         manager.insert_note(key.clone(), String::from("note1"));
         println!("{}", manager.get_menu());
+    }
+
+    #[test]
+    fn test_get_group_paths() {
+        let manager = Manager::default();
+        manager.clear_db();
+        manager.insert_group(String::from("root"), "group1".to_string());
+        let key = last_group_key(&manager);
+        manager.insert_group(key.clone(), "group2".to_string());
+        println!("{}", manager.get_group_paths());
     }
 }

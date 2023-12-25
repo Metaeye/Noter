@@ -1,6 +1,6 @@
 use std::collections::HashSet;
-use serde::{ Deserialize, Serialize };
 use sled::IVec;
+use serde::{ Deserialize, Serialize };
 
 #[derive(Serialize, Deserialize)]
 pub struct Group {

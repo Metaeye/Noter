@@ -8,7 +8,11 @@
             @collapse="onCollapse"
         >
             <div class="logo" />
-            <Menu :collapsed="!collapsed" />
+            <Menu />
+            <a-space v-if="!collapsed" size="medium" class="button-container">
+                <NewButton />
+                <DeleteButton />
+            </a-space>
         </a-layout-sider>
         <a-layout :has-sider="false">
             <Content />
@@ -18,10 +22,16 @@
 
 <script setup lang="ts">
 import { ref } from "vue";
+// import { useMenuStore } from "../stores/menu";
 import Menu from "../components/Menu/Menu.vue";
 import Content from "../components/Content/Content.vue";
+import NewButton from "../components/Button/NewButton.vue";
+import DeleteButton from "../components/Button/DeleteButton.vue";
 
-const collapsed = ref(false);
+const collapsed = ref(true);
+
+// const menuStore = useMenuStore();
+
 const onCollapse = (val: boolean) => {
     collapsed.value = val;
 };
@@ -68,5 +78,9 @@ const onCollapse = (val: boolean) => {
     font-size: 16px;
     font-stretch: condensed;
     text-align: center;
+}
+.button-container {
+    display: flex;
+    justify-content: center;
 }
 </style>

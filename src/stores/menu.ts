@@ -1,77 +1,6 @@
 import { ref } from "vue";
 import { defineStore } from "pinia";
-import { invoke } from "@tauri-apps/api/tauri";
-
-const initialize = async (root: any) => {
-    // root.value = JSON.parse(await invoke("initialize_menu", {}));
-    root.value = JSON.parse(`{
-        "key": "root",
-        "title": "root",
-        "notes": {
-            "1703339815803139800": {
-                "key": "1703339815803139800",
-                "parent": "root",
-                "title": "gift",
-                "contents": [
-                    ["activity1", "description1"],
-                    ["activity2", "description2"]
-                ]
-            }
-        },
-        "groups": {
-            "1703339815803137900": {
-                "key": "1703339815803137900",
-                "title": "math",
-                "notes": {
-                    "1703339815803137800": {
-                        "key": "1703339815803137800",
-                        "parent": "1703339815803137900",
-                        "title": "math",
-                        "contents": [
-                            ["activity1", "description1"],
-                            ["activity2", "description2"]
-                        ]
-                    }
-                },
-                "groups": {
-                    "1703339815803135200": {
-                        "key": "1703339815803135200",
-                        "title": "algebra",
-                        "notes": {
-                            "1703339815803135000": {
-                                "key": "1703339815803135000",
-                                "parent": "1703339815803135200",
-                                "title": "algebra",
-                                "contents": [
-                                    ["activity1", "description1"],
-                                    ["activity2", "description2"]
-                                ]
-                            }
-                        },
-                        "groups": {
-                            "1703339815803122800": {
-                                "key": "1703339815803122800",
-                                "title": "add",
-                                "notes": {
-                                    "1703339815803119900": {
-                                        "key": "1703339815803119900",
-                                        "parent": "1703339815803122800",
-                                        "title": "add",
-                                        "contents": [
-                                            ["activity1", "description1"],
-                                            ["activity2", "description2"]
-                                        ]
-                                    }
-                                },
-                                "groups": {}
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }`);
-};
+import { invoke } from "@tauri-apps/api";
 
 const time_stamp = () => {
     return new Date().getTime().toString();
@@ -80,20 +9,12 @@ const time_stamp = () => {
 const find =
     (what: string) =>
     (where: any): any => {
-        if (what === "root") {
-            return where;
-        }
-        const note_key = Object.keys(where.notes).find((k) => k === what);
-        if (note_key !== undefined) {
-            return where.notes[note_key];
-        }
-        const group_key = Object.keys(where.groups).find((k) => k === what);
-        if (group_key !== undefined) {
-            return where.groups[group_key];
-        }
-        return Object.values(where.groups)
-            .map((group) => find(what)(group))
-            .find((value) => value !== undefined);
+        return where.key === what
+            ? where
+            : where.items.find((item: any) => item.key === what) ||
+                  where.submenus
+                      .map((submenu: any) => find(what)(submenu))
+                      .find((value: any) => value !== undefined);
     };
 
 const toTree = (root: any) => {
@@ -103,11 +24,9 @@ const toTree = (root: any) => {
             title: node.title,
             children: [],
         };
-        if (node.groups) {
-            Object.values(node.groups).forEach((group: any) => {
-                tree.children.push(convertToTree(group));
-            });
-        }
+        node.submenus.forEach((submenu: any) => {
+            tree.children.push(convertToTree(submenu));
+        });
         return tree;
     };
     return convertToTree(root);
@@ -119,17 +38,73 @@ const toList = (tree: any, path: string[] = [], result: any[] = []) => {
         ...tree,
         title: newPath.join("/"),
     });
-    if (tree.children) {
-        tree.children.forEach((child: any) => {
-            toList(child, newPath, result);
-        });
-    }
+    tree.children.forEach((child: any) => {
+        toList(child, newPath, result);
+    });
+    // if (tree.children) {
+    //     tree.children.forEach((child: any) => {
+    //         toList(child, newPath, result);
+    //     });
+    // }
     return result;
 };
 
 export const useMenuStore = defineStore("menu", () => {
-    const root: any = ref();
-    initialize(root);
+    const initialize = () => {
+        return JSON.parse(`{
+            "key": "root",
+            "title": "root",
+            "items": [
+                {
+                    "key": "1703339815803139800",
+                    "title": "gift"
+                }
+            ],
+            "submenus": [
+                {
+                    "key": "1703339815803137900",
+                    "title": "math",
+                    "items": [
+                        {
+                            "key": "1703339815803137800",
+                            "title": "math"
+                        }
+                    ],
+                    "submenus": [
+                        {
+                            "key": "1703339815803135200",
+                            "title": "algebra",
+                            "items": [
+                                {
+                                    "key": "1703339815803135000",
+                                    "title": "algebra"
+                                }
+                            ],
+                            "submenus": [
+                                {
+                                    "key": "1703339815803122800",
+                                    "title": "add",
+                                    "items": [
+                                        {
+                                            "key": "1703339815803119900",
+                                            "title": "add"
+                                        }
+                                    ],
+                                    "submenus": []
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }`);
+    };
+
+    const root: any = ref(initialize());
+
+    const get_menu = async () => {
+        root.value = JSON.parse(await invoke<string>("get_menu"));
+    };
 
     const curNote = ref();
     const curContent = ref();
@@ -141,20 +116,20 @@ export const useMenuStore = defineStore("menu", () => {
     };
 
     const children = (parent: any) => {
-        const children: any[] = [];
-        Object.values(parent.notes).forEach((note: any) => {
-            children.push({
-                key: note.key,
-                title: ["notes", note.title].join("/"),
-            });
+        const items = parent.items.map((item: any) => {
+            return {
+                key: item.key,
+                title: ["notes", item.title].join("/"),
+            };
         });
-        Object.values(parent.groups).forEach((group: any) => {
-            children.push({
-                key: group.key,
-                title: ["groups", group.title].join("/"),
-            });
+        const submenus = parent.submenus.map((submenu: any) => {
+            return {
+                key: submenu.key,
+                title: ["groups", submenu.title].join("/"),
+            };
         });
-        return children;
+
+        return [...items, ...submenus];
     };
 
     const pushNote = (parent: string, title: string) => {
@@ -167,7 +142,6 @@ export const useMenuStore = defineStore("menu", () => {
         };
         find_in_root(parent).notes[key] = value;
         // todo: send notes to backend to save
-        
     };
 
     const pushGroup = (parent: string, title: string) => {
@@ -214,5 +188,7 @@ export const useMenuStore = defineStore("menu", () => {
         children,
         pushContent,
         removeContent,
+        initialize,
+        get_menu,
     };
 });

@@ -3,7 +3,7 @@ use sled::Tree;
 use crate::{ group::Group, note::Note };
 
 #[derive(Serialize)]
-struct MenuItem {
+pub struct MenuItem {
     key: String,
     title: String,
 }
@@ -14,6 +14,12 @@ pub struct Menu {
     title: String,
     items: Vec<MenuItem>,
     submenus: Vec<Menu>,
+}
+
+impl From<MenuItem> for String {
+    fn from(menu_item: MenuItem) -> Self {
+        serde_json::to_string(&menu_item).unwrap()
+    }
 }
 
 impl From<Menu> for String {

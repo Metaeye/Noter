@@ -1,6 +1,6 @@
 <template>
-    <a-menu-item v-for="note in props.notes" :key="note.key">
-        <span><icon-book />{{ note.title }}</span>
+    <a-menu-item v-for="item in props.items" :key="item.key">
+        <span><icon-book />{{ item.title }}</span>
     </a-menu-item>
 </template>
 
@@ -8,7 +8,7 @@
 import { IconBook } from "@arco-design/web-vue/es/icon";
 
 const props = defineProps({
-    notes: {
+    items: {
         type: Object,
         default: [],
     },

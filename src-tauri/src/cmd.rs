@@ -53,3 +53,15 @@ pub async fn remove_group(parent_group_key: String, key: String) {
     let manager = MANAGER.lock().unwrap();
     manager.remove_group(parent_group_key, key);
 }
+
+#[tauri::command]
+pub async fn get_group_items(group_key: String) -> String {
+    let manager = MANAGER.lock().unwrap();
+    manager.get_group_items(group_key)
+}
+
+#[tauri::command]
+pub async fn get_group_paths() -> String {
+    let manager = MANAGER.lock().unwrap();
+    manager.get_group_paths()
+}
