@@ -64,40 +64,40 @@ impl Manager {
         let key = Self::time_stamp();
         let notes = self.db.open_tree("notes").expect("Failed to open tree");
         let groups = self.db.open_tree("groups").expect("Failed to open tree");
-        let old_group = Group::from(groups.remove(group_key.clone()).unwrap().unwrap());
-        let new_group = old_group.insert_note_key(key.clone());
-        groups.insert(group_key, new_group).unwrap();
+        let group = Group::from(groups.remove(group_key.clone()).unwrap().unwrap());
+        let group = group.insert_note(key.clone());
+        groups.insert(group_key, group).unwrap();
         notes.insert(key, Note::new(note_name)).unwrap();
     }
 
     pub fn remove_note(&self, group_key: String, key: String) {
         let notes = self.db.open_tree("notes").expect("Failed to open tree");
         let groups = self.db.open_tree("groups").expect("Failed to open tree");
-        let old_group = Group::from(groups.remove(group_key.clone()).unwrap().unwrap());
-        let new_group = old_group.remove_note_key(key.clone());
-        groups.insert(group_key, new_group).unwrap();
+        let group = Group::from(groups.remove(group_key.clone()).unwrap().unwrap());
+        let group = group.remove_note(key.clone());
+        groups.insert(group_key, group).unwrap();
         notes.remove(key).unwrap();
     }
 
     pub fn insert_content(&self, note_key: String, json_content: String) {
         let notes = self.db.open_tree("notes").expect("Failed to open tree");
-        let old_note = Note::from(notes.remove(note_key.clone()).unwrap().unwrap());
-        let new_note = old_note.insert_content(json_content);
-        notes.insert(note_key, new_note).unwrap();
+        let note = Note::from(notes.remove(note_key.clone()).unwrap().unwrap());
+        let note = note.insert_content(json_content);
+        notes.insert(note_key, note).unwrap();
     }
 
     pub fn update_content(&self, note_key: String, index: usize, json_content: String) {
         let notes = self.db.open_tree("notes").expect("Failed to open tree");
-        let old_note = Note::from(notes.remove(note_key.clone()).unwrap().unwrap());
-        let new_note = old_note.update_content(index, json_content);
-        notes.insert(note_key, new_note).unwrap();
+        let note = Note::from(notes.remove(note_key.clone()).unwrap().unwrap());
+        let note = note.update_content(index, json_content);
+        notes.insert(note_key, note).unwrap();
     }
 
     pub fn remove_content(&self, note_key: String, index: usize) {
         let notes = self.db.open_tree("notes").expect("Failed to open tree");
-        let old_note = Note::from(notes.remove(note_key.clone()).unwrap().unwrap());
-        let new_note = old_note.remove_content(index);
-        notes.insert(note_key, new_note).unwrap();
+        let note = Note::from(notes.remove(note_key.clone()).unwrap().unwrap());
+        let note = note.remove_content(index);
+        notes.insert(note_key, note).unwrap();
     }
 
     pub fn get_note_contents(&self, note_key: String) -> String {
@@ -115,17 +115,29 @@ impl Manager {
     pub fn insert_group(&self, parent_group_key: String, group_name: String) {
         let key = Self::time_stamp();
         let groups = self.db.open_tree("groups").expect("Failed to open tree");
-        let old_group = Group::from(groups.remove(parent_group_key.clone()).unwrap().unwrap());
-        let new_group = old_group.insert_group_key(key.clone());
-        groups.insert(parent_group_key, new_group).unwrap();
+        let parent_group = Group::from(groups.remove(parent_group_key.clone()).unwrap().unwrap());
+        let parent_group = parent_group.insert_group(key.clone());
+        groups.insert(parent_group_key, parent_group).unwrap();
         groups.insert(key, Group::new(group_name)).unwrap();
     }
 
     pub fn remove_group(&self, parent_group_key: String, key: String) {
         let groups = self.db.open_tree("groups").expect("Failed to open tree");
-        let old_group = Group::from(groups.remove(parent_group_key.clone()).unwrap().unwrap());
-        let new_group = old_group.remove_group_key(key.clone());
-        groups.insert(parent_group_key, new_group).unwrap();
+        let parent_group = Group::from(groups.remove(parent_group_key.clone()).unwrap().unwrap());
+        let parent_group = parent_group.remove_group(key.clone());
+        groups.insert(parent_group_key, parent_group).unwrap();
+
+        let target_group = Group::from(groups.remove(key.clone()).unwrap().unwrap());
+        groups.insert(key.clone(), target_group.clone()).unwrap();
+        
+        target_group
+            .get_note_keys()
+            .iter()
+            .for_each(|note_key| self.remove_note(key.clone(), String::from(note_key)));
+        target_group
+            .get_group_keys()
+            .iter()
+            .for_each(|group_key| self.remove_group(key.clone(), String::from(group_key)));
         groups.remove(key).unwrap();
     }
 
@@ -163,7 +175,7 @@ impl Manager {
             } else {
                 format!("{}/{}", path, group.get_name())
             };
-            let menu_levels = group
+            let group_paths = group
                 .get_group_keys()
                 .iter()
                 .flat_map(|key| traverse_tree(key, &current_path, groups))
@@ -171,7 +183,7 @@ impl Manager {
 
             [
                 vec![json!({"key": group_key, "path": current_path}).to_string()],
-                menu_levels,
+                group_paths,
             ].concat()
         }
         let groups = self.db.open_tree("groups").expect("Failed to open tree");
