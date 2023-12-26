@@ -2,20 +2,20 @@
     <a-layout style="height: 400px">
         <a-layout-content>
             <a-space class="back-button">
-                <a-button type="outline" shape="round" @click="props.editing(false)">
+                <a-button type="outline" shape="round" @click="beforeBack">
                     <template #icon>
                         <icon-arrow-left />
                     </template>
                 </a-button>
             </a-space>
             <a-typography :style="{ marginTop: '-40px' }">
-                <a-typography-title> {{ menuStore.curContent[0] }} </a-typography-title>
+                <a-typography-title> {{ menuStore.editingContent[0] }} </a-typography-title>
                 <a-typography-paragraph v-if="!isEditing" @click="isEditing = true">
-                    {{ menuStore.curContent[1] }}
+                    {{ menuStore.editingContent[1] }}
                 </a-typography-paragraph>
                 <a-textarea
                     v-else
-                    v-model="menuStore.curContent[1]"
+                    v-model="menuStore.editingContent[1]"
                     @blur="isEditing = false"
                     :auto-size="{ minRows: 5 }"
                     style="margin-top: 20px"
@@ -29,7 +29,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { IconArrowLeft } from "@arco-design/web-vue/es/icon";
-// import { useContentStore } from "../../stores/content";
 import { useMenuStore } from "../../stores/menu";
 
 const props = defineProps({
@@ -39,11 +38,20 @@ const props = defineProps({
     },
 });
 
-// const contentStore = useContentStore();
-
 const menuStore = useMenuStore();
 
 const isEditing = ref(false);
+
+const beforeBack = () => {
+    props.editing(false);
+    menuStore.updateContent(
+        menuStore.editingNoteKey,
+        menuStore.editingContentIndex,
+        menuStore.editingContent
+    );
+    menuStore.setEditingContentIndex(-1);
+    menuStore.setEditingContent(["", ""]);
+};
 </script>
 
 <style scoped>

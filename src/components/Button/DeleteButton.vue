@@ -49,14 +49,14 @@ watch(
     () => form.groupKey,
     async (newGroupKey) => {
         if (newGroupKey !== "") {
-            menuStore.get_group_items(newGroupKey);
+            menuStore.getGroupItems(newGroupKey);
         }
     }
 );
 
 const handleClick = async () => {
     visible.value = true;
-    menuStore.get_groups();
+    menuStore.getGroups();
 };
 
 const handleBeforeOk = (done: Function) => {
@@ -86,7 +86,7 @@ const remove = async () => {
         });
     }
     form.itemKey = "";
-    menuStore.get_menu();
-    menuStore.get_groups();
+    menuStore.getMenu();
+    menuStore.getGroups();
 };
 </script>

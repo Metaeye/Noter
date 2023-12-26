@@ -2,7 +2,7 @@
     <a-menu @menuItemClick="onClickMenuItem" @subMenuClick="onClickMenuItem">
         <Notes :items="menuStore.menu.items" />
         <Groups :menu="menuStore.menu.submenus" />
-        <a-button type="primary" @click="menuStore.get_menu">Open</a-button>
+        <a-button type="primary" @click="menuStore.getMenu">Open</a-button>
     </a-menu>
 </template>
 
@@ -11,12 +11,19 @@ import { Message } from "@arco-design/web-vue";
 import { useMenuStore } from "../../stores/menu";
 import Notes from "./Notes.vue";
 import Groups from "./Groups.vue";
+import { invoke } from "@tauri-apps/api";
 
 const menuStore = useMenuStore();
 
-const onClickMenuItem = (key: string) => {
-    // const value = menuStore.find_in_root(key);
-    // menuStore.curNote = Object.keys(value).includes("contents") ? value : undefined;
+const onClickMenuItem = async (key: string) => {
+    if (await invoke("is_note", { key: key })) {
+        menuStore.getNoteContents(key);
+        menuStore.setIsNoteEditing(true);
+        menuStore.setEditingNoteKey(key);
+    } else {
+        menuStore.setIsNoteEditing(false);
+        menuStore.setEditingNoteKey("");
+    }
     Message.info({ content: `You select ${key}`, showIcon: true });
 };
 </script>

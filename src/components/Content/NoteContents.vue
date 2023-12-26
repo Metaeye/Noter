@@ -1,10 +1,14 @@
 <template>
-    <a-list v-if="menuStore.curNote">
-        <a-list-item v-for="(value, i) in menuStore.curNote.contents" :key="i">
-            <a-list-item-meta :title="value[0]" :description="description(value[1])" />
+    <a-list v-if="menuStore.isNoteEditing">
+        <a-list-item v-for="(content, i) in menuStore.contents" :key="i">
+            <a-list-item-meta
+                class="left-align"
+                :title="content[0]"
+                :description="description(content[1])"
+            />
             <template #actions>
-                <icon-edit @click="beforeEdit(value)" />
-                <icon-delete @click="menuStore.removeContent(menuStore.curNote, i)" />
+                <icon-edit @click="beforeEdit(content, i)" />
+                <icon-delete @click="beforeRemove(i)" />
             </template>
         </a-list-item>
         <a-list-item>
@@ -13,10 +17,10 @@
                     :style="{ width: '320px' }"
                     placeholder="Please enter something"
                     allow-clear
-                    v-model="inputContent"
-                    @press-enter="pushContent"
+                    v-model="newContentName"
+                    @press-enter="beforeInsert"
                 />
-                <a-button type="primary" shape="round" @click="pushContent">
+                <a-button type="primary" shape="round" @click="beforeInsert">
                     <span><icon-plus /></span>
                 </a-button>
             </a-space>
@@ -38,19 +42,35 @@ const props = defineProps({
 
 const menuStore = useMenuStore();
 
-const inputContent = ref("");
+const newContentName = ref("");
 
 const description = (origin: string): string => {
-    return [origin.substring(0, 50), "..."].join("");
+    if (origin.length > 50) {
+        return origin.slice(0, 50) + "...";
+    }
+    return origin;
 };
 
-const pushContent = () => {
-    menuStore.pushContent(menuStore.curNote, [inputContent.value, "description"]);
-    inputContent.value = "";
+const beforeInsert = () => {
+    menuStore.insertContent(menuStore.editingNoteKey, newContentName.value.trim());
+    menuStore.getNoteContents(menuStore.editingNoteKey);
+    newContentName.value = "";
 };
 
-const beforeEdit = (content: string[]) => {
-    menuStore.curContent = content;
+const beforeRemove = (index: number) => {
+    menuStore.removeContent(menuStore.editingNoteKey, index);
+    menuStore.getNoteContents(menuStore.editingNoteKey);
+};
+
+const beforeEdit = (content: string[], index: number) => {
     props.editing(true);
+    menuStore.setEditingContent(content);
+    menuStore.setEditingContentIndex(index);
 };
 </script>
+
+<style scoped>
+.left-align {
+    text-align: left;
+}
+</style>

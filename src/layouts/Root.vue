@@ -1,15 +1,9 @@
 <template>
     <a-layout class="layout-demo">
-        <a-layout-sider
-            theme="light"
-            :width="220"
-            :collapsible="true"
-            :collapsed="collapsed"
-            @collapse="onCollapse"
-        >
+        <a-layout-sider theme="light" :resize-directions="['right']" :width="220">
             <div class="logo" />
             <Menu />
-            <a-space v-if="!collapsed" size="medium" class="button-container">
+            <a-space size="medium" class="button-container">
                 <NewButton />
                 <DeleteButton />
             </a-space>
@@ -21,27 +15,26 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
-// import { useMenuStore } from "../stores/menu";
 import Menu from "../components/Menu/Menu.vue";
 import Content from "../components/Content/Content.vue";
 import NewButton from "../components/Button/NewButton.vue";
 import DeleteButton from "../components/Button/DeleteButton.vue";
-
-const collapsed = ref(true);
-
-// const menuStore = useMenuStore();
-
-const onCollapse = (val: boolean) => {
-    collapsed.value = val;
-};
 </script>
 
 <style scoped>
 .layout-demo {
-    height: 500px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     background: var(--color-fill-2);
     border: 1px solid var(--color-border);
+}
+.layout-demo :deep(.arco-layout-sider) {
+    width: 200px;
+    min-width: 200px;
+    max-width: 750px;
 }
 .layout-demo :deep(.arco-layout-sider) .logo {
     height: 32px;
@@ -56,20 +49,12 @@ const onCollapse = (val: boolean) => {
     line-height: 64px;
     background: var(--color-bg-3);
 }
-.layout-demo :deep(.arco-layout-footer) {
-    height: 32px;
-    color: var(--color-text-2);
-    font-weight: 400;
-    font-size: 14px;
-    line-height: 48px;
-}
 .layout-demo :deep(.arco-layout-content) {
     color: var(--color-text-2);
     font-weight: 400;
     font-size: 14px;
     background: var(--color-bg-3);
 }
-.layout-demo :deep(.arco-layout-footer),
 .layout-demo :deep(.arco-layout-content) {
     display: flex;
     flex-direction: column;

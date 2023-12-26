@@ -14,11 +14,13 @@ fn main() {
                 cmd::update_content,
                 cmd::insert_note,
                 cmd::remove_note,
+                cmd::get_note_contents,
                 cmd::insert_group,
                 cmd::remove_group,
                 cmd::get_menu,
                 cmd::get_group_items,
-                cmd::get_groups
+                cmd::get_groups,
+                cmd::is_note
             ]
         )
         .run(tauri::generate_context!())

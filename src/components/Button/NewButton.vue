@@ -50,7 +50,7 @@ const form = reactive({
 
 const handleClick = async () => {
     visible.value = true;
-    menuStore.get_groups();
+    menuStore.getGroups();
 };
 
 const handleBeforeOk = (done: Function) => {
@@ -80,7 +80,7 @@ const insert = async () => {
             group_name: form.name,
         });
     }
-    menuStore.get_menu();
-    menuStore.get_groups();
+    menuStore.getMenu();
+    menuStore.getGroups();
 };
 </script>

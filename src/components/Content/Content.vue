@@ -2,8 +2,11 @@
     <a-layout-content>
         <Description v-if="isEditing" :editing="editing" />
         <NoteContents v-else :editing="editing" />
-        {{ menuStore.root }}
-        <!-- {{ isEditingDescription }} -->
+        {{ isEditing }}
+        {{ menuStore.isNoteEditing }}
+        {{ menuStore.editingNoteKey }}
+        {{ menuStore.editingContent }}
+        {{ menuStore.contents }}
     </a-layout-content>
 </template>
 

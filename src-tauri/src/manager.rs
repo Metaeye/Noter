@@ -75,25 +75,37 @@ impl Manager {
         notes.remove(key).unwrap();
     }
 
-    pub fn insert_note_content(&self, note_key: String, json: String) {
+    pub fn insert_content(&self, note_key: String, json_content: String) {
         let notes = self.db.open_tree("notes").expect("Failed to open tree");
         let old_note = Note::from(notes.remove(note_key.clone()).unwrap().unwrap());
-        let new_note = old_note.insert_content(json);
+        let new_note = old_note.insert_content(json_content);
         notes.insert(note_key, new_note).unwrap();
     }
 
-    pub fn update_note_content(&self, note_key: String, index: usize, json: String) {
+    pub fn update_content(&self, note_key: String, index: usize, json_content: String) {
         let notes = self.db.open_tree("notes").expect("Failed to open tree");
         let old_note = Note::from(notes.remove(note_key.clone()).unwrap().unwrap());
-        let new_note = old_note.update_content(index, json);
+        let new_note = old_note.update_content(index, json_content);
         notes.insert(note_key, new_note).unwrap();
     }
 
-    pub fn remove_note_content(&self, note_key: String, index: usize) {
+    pub fn remove_content(&self, note_key: String, index: usize) {
         let notes = self.db.open_tree("notes").expect("Failed to open tree");
         let old_note = Note::from(notes.remove(note_key.clone()).unwrap().unwrap());
         let new_note = old_note.remove_content(index);
         notes.insert(note_key, new_note).unwrap();
+    }
+
+    pub fn get_note_contents(&self, note_key: String) -> String {
+        let notes = self.db.open_tree("notes").expect("Failed to open tree");
+        let note = Note::from(notes.get(note_key).unwrap().unwrap());
+        let contents = note
+            .get_contents()
+            .iter()
+            .map(|content| json!(content).to_string())
+            .collect::<Vec<String>>();
+
+        format!("[{}]", contents.join(","))
     }
 
     pub fn insert_group(&self, parent_group_key: String, group_name: String) {
@@ -161,6 +173,11 @@ impl Manager {
         let groups = self.db.open_tree("groups").expect("Failed to open tree");
 
         format!("[{}]", traverse_tree("root", "", &groups).join(","))
+    }
+
+    pub fn is_note(&self, key: String) -> bool {
+        let notes = self.db.open_tree("notes").expect("Failed to open tree");
+        notes.contains_key(key).unwrap()
     }
 
     fn time_stamp() -> String {
@@ -252,7 +269,7 @@ mod tests {
         manager.clear_db();
         manager.insert_note(String::from("root"), "note1".to_string());
         let json = String::from(r#"["新活动","新描述"]"#);
-        manager.insert_note_content(last_note_key(&manager), json);
+        manager.insert_content(last_note_key(&manager), json);
         print_notes(&manager);
     }
 
@@ -263,11 +280,11 @@ mod tests {
         manager.insert_note(String::from("root"), "note1".to_string());
         let key = last_note_key(&manager);
         let json = String::from(r#"["活动","描述"]"#);
-        manager.insert_note_content(key.clone(), json);
+        manager.insert_content(key.clone(), json);
         print_notes(&manager);
 
         let json = String::from(r#"["新活动","新描述"]"#);
-        manager.update_note_content(key, 0, json);
+        manager.update_content(key, 1, json);
         print_notes(&manager);
     }
 
@@ -278,10 +295,10 @@ mod tests {
         manager.insert_note(String::from("root"), "note1".to_string());
         let key = last_note_key(&manager);
         let json = String::from(r#"["活动","描述"]"#);
-        manager.insert_note_content(key.clone(), json);
+        manager.insert_content(key.clone(), json);
         print_notes(&manager);
 
-        manager.remove_note_content(key, 0);
+        manager.remove_content(key, 0);
         print_notes(&manager);
     }
 
@@ -330,5 +347,14 @@ mod tests {
         let key = last_group_key(&manager);
         manager.insert_group(key.clone(), "group2".to_string());
         println!("{}", manager.get_groups());
+    }
+
+    #[test]
+    fn test_get_note_contents() {
+        let manager = Manager::new("../db/test_db");
+        manager.clear_db();
+        manager.insert_note(String::from("root"), String::from("note1"));
+        let key = last_note_key(&manager);
+        println!("{}", manager.get_note_contents(key));
     }
 }

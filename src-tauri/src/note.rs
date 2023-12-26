@@ -11,7 +11,7 @@ impl Note {
     pub fn new(name: String) -> Self {
         Self {
             name,
-            contents: Vec::new(),
+            contents: vec![(String::from("Activity"), String::from("Description"))],
         }
     }
 
@@ -23,13 +23,13 @@ impl Note {
         &self.contents
     }
 
-    pub fn insert_content(mut self, json: String) -> Self {
-        self.contents.push(Note::json_to_content(&json));
+    pub fn insert_content(mut self, json_content: String) -> Self {
+        self.contents.push(Note::json_to_content(&json_content));
         self
     }
 
-    pub fn update_content(mut self, index: usize, json: String) -> Self {
-        self.contents[index] = Note::json_to_content(&json);
+    pub fn update_content(mut self, index: usize, json_content: String) -> Self {
+        self.contents[index] = Note::json_to_content(&json_content);
         self
     }
 
@@ -38,8 +38,8 @@ impl Note {
         self
     }
 
-    fn json_to_content(json: &str) -> (String, String) {
-        serde_json::from_str(json).unwrap()
+    fn json_to_content(json_content: &str) -> (String, String) {
+        serde_json::from_str(json_content).unwrap()
     }
 }
 
