@@ -10,23 +10,25 @@
     >
         <a-form :model="form">
             <a-form-item field="name" label="Name">
-                <a-input v-model="form.name" />
-            </a-form-item>
-            <a-form-item field="type" label="Type">
-                <a-select v-model="form.type">
-                    <a-option value="note">Note</a-option>
-                    <a-option value="group">Group</a-option>
-                </a-select>
+                <input v-model="form.name" />
             </a-form-item>
             <a-form-item field="parentGroupKey" label="Path">
-                <a-select v-model="form.parentGroupKey">
+                <a-select class="custom-select" v-model="form.parentGroupKey">
                     <a-option v-for="group in menuStore.groups" :value="group.key">
                         {{ group.path }}
                     </a-option>
                 </a-select>
             </a-form-item>
+            <a-form-item field="type" label="Type">
+                <a-radio-group v-model="form.type">
+                    <a-radio value="note">Note</a-radio>
+                    <a-radio value="groupB">Group</a-radio>
+                </a-radio-group>
+            </a-form-item>
             <a-form-item>
-                <a-button type="primary" @click="insert">New</a-button>
+                <a-button type="outline" @click="insert" shape="round">
+                    <span><icon-plus /> New </span>
+                </a-button>
             </a-form-item>
         </a-form>
     </a-modal>
@@ -35,6 +37,7 @@
 <script setup lang="ts">
 import { reactive, ref } from "vue";
 import { invoke } from "@tauri-apps/api";
+import { Message } from "@arco-design/web-vue";
 import { useMenuStore } from "../../stores/menu";
 import { IconPlus } from "@arco-design/web-vue/es/icon";
 
@@ -82,5 +85,6 @@ const insert = async () => {
     }
     menuStore.getMenu();
     menuStore.getGroups();
+    Message.success({ content: `Create ${form.name} successfully!`, showIcon: true });
 };
 </script>

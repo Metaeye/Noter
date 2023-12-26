@@ -24,7 +24,14 @@
                 </a-select>
             </a-form-item>
             <a-form-item>
-                <a-button type="primary" @click="remove">Delete</a-button>
+                <a-popconfirm
+                    content="Are you sure you want to delete?"
+                    position="bottom"
+                    type="warning"
+                    @before-ok="remove"
+                >
+                    <a-button type="outline" shape="round">Delete</a-button>
+                </a-popconfirm>
             </a-form-item>
         </a-form>
     </a-modal>
@@ -33,6 +40,7 @@
 <script setup lang="ts">
 import { invoke } from "@tauri-apps/api";
 import { reactive, ref, watch } from "vue";
+import { Message } from "@arco-design/web-vue";
 import { useMenuStore } from "../../stores/menu";
 import { IconDelete } from "@arco-design/web-vue/es/icon";
 
@@ -79,14 +87,15 @@ const remove = async () => {
             group_key: form.groupKey,
             key: item.key,
         });
-    } else if (item?.name.startsWith("Group")) {
+    } else {
         await invoke<void>("remove_group", {
             parent_group_key: form.groupKey,
-            key: item.key,
+            key: item?.key,
         });
     }
     form.itemKey = "";
     menuStore.getMenu();
     menuStore.getGroups();
+    Message.success({ content: `Delete ${item?.name} successfully!`, showIcon: true });
 };
 </script>
