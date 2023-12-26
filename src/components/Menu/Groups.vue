@@ -1,5 +1,5 @@
 <template>
-    <a-sub-menu v-for="submenu in props.menu" :key="submenu.key">
+    <a-sub-menu class="submenu" v-for="submenu in props.menu" :key="submenu.key">
         <template #title>
             <span title="Title"><icon-folder />{{ submenu.name }}</span>
         </template>
