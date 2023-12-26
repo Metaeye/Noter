@@ -10,6 +10,11 @@ pub struct Manager {
 
 impl Default for Manager {
     fn default() -> Self {
+        // let exe_path = std::env::current_exe().expect("Failed to get current exe path");
+        // let install_path = exe_path.parent().expect("Failed to get install path");
+        // let db = sled
+        //     ::open(format!("{}\\db", install_path.display()))
+        //     .expect("Failed to open database");
         let db = sled::open("../db/default_db").expect("Failed to open database");
         let _ = db.open_tree("notes").expect("Failed to open tree");
         let groups = db.open_tree("groups").expect("Failed to open tree");
@@ -356,5 +361,12 @@ mod tests {
         manager.insert_note(String::from("root"), String::from("note1"));
         let key = last_note_key(&manager);
         println!("{}", manager.get_note_contents(key));
+    }
+
+    #[test]
+    fn test_path() {
+        let exe_path = std::env::current_exe().expect("Failed to get current exe path");
+        let install_path = exe_path.parent().expect("Failed to get install path");
+        println!("{:?}", format!("{}\\db", install_path.display()));
     }
 }

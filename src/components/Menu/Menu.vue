@@ -9,7 +9,7 @@
 import Notes from "./Notes.vue";
 import Groups from "./Groups.vue";
 import { invoke } from "@tauri-apps/api";
-import { Message } from "@arco-design/web-vue";
+// import { Message } from "@arco-design/web-vue";
 import { useMenuStore } from "../../stores/menu";
 
 const menuStore = useMenuStore();
@@ -23,7 +23,7 @@ const onClickMenuItem = async (key: string) => {
         menuStore.setIsNoteEditing(false);
         menuStore.setEditingNoteKey("");
     }
-    Message.info({ content: `You select ${key}`, showIcon: true });
+    // Message.info({ content: `You select ${key}`, showIcon: true });
 };
 </script>
 
