@@ -1,7 +1,7 @@
 <template>
     <a-sub-menu v-for="submenu in props.menu" :key="submenu.key">
         <template #title>
-            <span title="Title"><icon-folder />{{ submenu.title }}</span>
+            <span title="Title"><icon-folder />{{ submenu.name }}</span>
         </template>
         <Notes :items="submenu.items" />
         <Groups :menu="submenu.submenus" />

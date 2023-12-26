@@ -1,7 +1,7 @@
 <template>
     <a-menu @menuItemClick="onClickMenuItem" @subMenuClick="onClickMenuItem">
-        <Notes :items="menuStore.root.items" />
-        <Groups :menu="menuStore.root.submenus" />
+        <Notes :items="menuStore.menu.items" />
+        <Groups :menu="menuStore.menu.submenus" />
         <a-button type="primary" @click="menuStore.get_menu">Open</a-button>
     </a-menu>
 </template>

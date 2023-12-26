@@ -1,32 +1,4 @@
-import * as fs from "fs";
-
-let root = JSON.parse(fs.readFileSync("./root.json", "utf8"));
-
-let title = root["title"];
-let notes = root["notes"];
-let groups = root["groups"];
-
-function printNotes(notes) {
-    Object.keys(notes).forEach((key) => {
-        let todo_list = notes[key];
-        console.log(key, ":", todo_list);
-    });
-}
-
-function printGroup(group) {
-    let title = group["title"];
-    let notes = group["notes"];
-    let groups = group["groups"];
-
-    console.log("title:", title);
-    console.log("notes:");
-    printNotes(notes);
-    console.log("groups:");
-    Object.keys(groups).forEach((key) => {
-        let group = groups[key];
-        console.log(key, ":");
-        printGroup(group);
-    });
-}
-
-printGroup(root);
+const items = JSON.parse(
+    `[{"key":"1703575915","name":"note1"},{"key":"1703575915","name":"group1"}]`
+);
+console.log(items);

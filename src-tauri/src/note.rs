@@ -15,7 +15,7 @@ impl Note {
         }
     }
 
-    pub fn get_title(&self) -> &String {
+    pub fn get_name(&self) -> &String {
         &self.name
     }
 

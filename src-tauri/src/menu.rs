@@ -5,13 +5,13 @@ use crate::{ group::Group, note::Note };
 #[derive(Serialize)]
 pub struct MenuItem {
     key: String,
-    title: String,
+    name: String,
 }
 
 #[derive(Serialize)]
 pub struct Menu {
     key: String,
-    title: String,
+    name: String,
     items: Vec<MenuItem>,
     submenus: Vec<Menu>,
 }
@@ -29,8 +29,8 @@ impl From<Menu> for String {
 }
 
 impl MenuItem {
-    pub fn new(key: String, title: String) -> Self {
-        Self { key, title }
+    pub fn new(key: String, name: String) -> Self {
+        Self { key, name }
     }
 }
 
@@ -41,7 +41,7 @@ impl Menu {
             .iter()
             .map(|key| {
                 let note = Note::from(notes.get(key).unwrap().unwrap());
-                MenuItem::new(key.to_string(), note.get_title().to_string())
+                MenuItem::new(key.to_string(), note.get_name().to_string())
             })
             .collect();
 
@@ -56,7 +56,7 @@ impl Menu {
 
         Self {
             key: key.to_string(),
-            title: root.get_name().to_string(),
+            name: root.get_name().to_string(),
             items,
             submenus,
         }

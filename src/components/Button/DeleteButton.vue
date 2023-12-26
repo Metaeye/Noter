@@ -9,54 +9,84 @@
         @before-ok="handleBeforeOk"
     >
         <a-form :model="form">
-            <a-form-item field="level" label="Level">
-                <a-select v-model="form.level">
-                    <a-option v-for="group in menuStore.groupList" :value="group.key">
-                        {{ group.title }}
+            <a-form-item field="path" label="Path">
+                <a-select v-model="form.groupKey">
+                    <a-option v-for="group in menuStore.groups" :value="group.key">
+                        {{ group.path }}
                     </a-option>
                 </a-select>
             </a-form-item>
-            <a-form-item field="title" label="Title">
-                <a-select v-model="form.title">
-                    <a-option
-                        v-for="child in menuStore.children(menuStore.find_in_root(form.level))"
-                        :value="child.key"
-                    >
-                        {{ child.title }}
+            <a-form-item field="name" label="Name">
+                <a-select v-model="form.itemKey">
+                    <a-option v-for="item in menuStore.items" :value="item.key">
+                        {{ item.name }}
                     </a-option>
                 </a-select>
+            </a-form-item>
+            <a-form-item>
+                <a-button type="primary" @click="remove">Delete</a-button>
             </a-form-item>
         </a-form>
     </a-modal>
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
-import { IconDelete } from "@arco-design/web-vue/es/icon";
+import { invoke } from "@tauri-apps/api";
+import { reactive, ref, watch } from "vue";
 import { useMenuStore } from "../../stores/menu";
+import { IconDelete } from "@arco-design/web-vue/es/icon";
 
 const menuStore = useMenuStore();
 
 const visible = ref(false);
 
-const form = ref({
-    level: "root",
-    title: "",
+const form = reactive({
+    groupKey: "",
+    itemKey: "",
 });
 
+watch(
+    () => form.groupKey,
+    async (newGroupKey) => {
+        if (newGroupKey !== "") {
+            menuStore.get_group_items(newGroupKey);
+        }
+    }
+);
 
-
-const handleClick = () => {
+const handleClick = async () => {
     visible.value = true;
+    menuStore.get_groups();
 };
 
 const handleBeforeOk = (done: Function) => {
-    menuStore.remove(form.value.level, form.value.title);
     visible.value = false;
+    form.groupKey = "";
+    form.itemKey = "";
     done();
 };
 
 const handleCancel = () => {
     visible.value = false;
+    form.groupKey = "";
+    form.itemKey = "";
+};
+
+const remove = async () => {
+    const item = Object.values(menuStore.items).find((item) => item.key === form.itemKey);
+    if (item?.name.startsWith("Note")) {
+        await invoke<void>("remove_note", {
+            group_key: form.groupKey,
+            key: item.key,
+        });
+    } else if (item?.name.startsWith("Group")) {
+        await invoke<void>("remove_group", {
+            parent_group_key: form.groupKey,
+            key: item.key,
+        });
+    }
+    form.itemKey = "";
+    menuStore.get_menu();
+    menuStore.get_groups();
 };
 </script>
