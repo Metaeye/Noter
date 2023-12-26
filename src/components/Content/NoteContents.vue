@@ -13,10 +13,9 @@
         </a-list-item>
         <a-list-item>
             <a-space size="medium">
-                <a-input
+                <input
                     :style="{ width: '320px' }"
                     placeholder="Please enter something"
-                    allow-clear
                     v-model="newContentName"
                     @press-enter="beforeInsert"
                 />
