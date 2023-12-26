@@ -30,7 +30,7 @@
                     type="warning"
                     @before-ok="remove"
                 >
-                    <a-button type="outline" shape="round">Delete</a-button>
+                    <a-button type="outline" shape="round" status="danger">Delete</a-button>
                 </a-popconfirm>
             </a-form-item>
         </a-form>

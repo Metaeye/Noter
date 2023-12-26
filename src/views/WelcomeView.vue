@@ -5,7 +5,7 @@
             <div class="login10-container-head">Welcome to Noter!</div>
             <a-space direction="vertical" size="medium" align="center">
                 <router-link to="/home" @click="menuStore.getMenu">
-                    <span><icon-send /> Start </span>
+                    <span> Start <icon-pen-fill /></span>
                 </router-link>
             </a-space>
         </div>
@@ -14,19 +14,14 @@
 
 <script setup lang="ts">
 import { useMenuStore } from "../stores/menu";
-import { IconSend } from "@arco-design/web-vue/es/icon";
+import { IconPenFill } from "@arco-design/web-vue/es/icon";
 
 const menuStore = useMenuStore();
 </script>
 
 <style lang="less" scoped>
-.btn {
-    border: none;
-    outline: none;
-    width: 50%;
-    height: 40px;
-    font-size: 16px;
-    border-radius: 40px;
+span {
+    font-size: 20px; /* 调整为你想要的字号大小 */
 }
 .login10 {
     overflow: hidden;
