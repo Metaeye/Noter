@@ -3,7 +3,7 @@
         <div class="login10-bg"></div>
         <div class="login10-container">
             <div class="login10-container-head">Welcome to Noter!</div>
-            <a-space direction="vertical" size="medium" :align="align">
+            <a-space direction="vertical" size="medium" align="center">
                 <router-link to="/home" @click="menuStore.getMenu">
                     <span><icon-send /> Start </span>
                 </router-link>
@@ -13,13 +13,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
 import { useMenuStore } from "../stores/menu";
 import { IconSend } from "@arco-design/web-vue/es/icon";
 
 const menuStore = useMenuStore();
-
-const align = ref("center");
 </script>
 
 <style lang="less" scoped>

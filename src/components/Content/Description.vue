@@ -9,14 +9,26 @@
                 </a-button>
             </a-space>
             <a-typography :style="{ marginTop: '-40px' }">
-                <a-typography-title> {{ menuStore.editingContent[0] }} </a-typography-title>
-                <a-typography-paragraph v-if="!isEditing" @click="isEditing = true">
+                <a-typography-title v-if="!isActivityEditing" @click="isActivityEditing = true">
+                    {{ menuStore.editingContent[0] }}
+                </a-typography-title>
+                <a-textarea
+                    v-else
+                    v-model="menuStore.editingContent[0]"
+                    @blur="isActivityEditing = false"
+                    :auto-size="{ minRows: 1, maxRows: 1 }"
+                    style="margin-top: 20px"
+                />
+                <a-typography-paragraph
+                    v-if="!isDescriptionEditing"
+                    @click="isDescriptionEditing = true"
+                >
                     {{ menuStore.editingContent[1] }}
                 </a-typography-paragraph>
                 <a-textarea
                     v-else
                     v-model="menuStore.editingContent[1]"
-                    @blur="isEditing = false"
+                    @blur="isDescriptionEditing = false"
                     :auto-size="{ minRows: 5 }"
                     style="margin-top: 20px"
                 />
@@ -40,7 +52,9 @@ const props = defineProps({
 
 const menuStore = useMenuStore();
 
-const isEditing = ref(false);
+const isActivityEditing = ref(false);
+
+const isDescriptionEditing = ref(false);
 
 const beforeBack = () => {
     props.editing(false);
