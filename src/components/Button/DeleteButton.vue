@@ -96,6 +96,7 @@ const remove = async () => {
     form.itemKey = "";
     menuStore.getMenu();
     menuStore.getGroups();
+    menuStore.getGroupItems(form.groupKey);
     Message.success({ content: `Delete ${item?.name} successfully!`, showIcon: true });
 };
 </script>
