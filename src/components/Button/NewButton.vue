@@ -1,5 +1,5 @@
 <template>
-    <a-button @click="handleClick" status="success">
+    <a-button @click="handleClick" type="outline">
         <span><icon-plus /> New </span>
     </a-button>
     <a-modal

@@ -3,11 +3,9 @@
         <div class="login10-bg"></div>
         <div class="login10-container">
             <div class="login10-container-head">Welcome to Noter!</div>
-            <a-space direction="vertical" size="medium" align="center">
-                <router-link to="/home" @click="menuStore.getMenu">
-                    <span> Start <icon-pen-fill /></span>
-                </router-link>
-            </a-space>
+            <router-link to="/home" @click="menuStore.getMenu">
+                <span> Start <icon-pen-fill /></span>
+            </router-link>
         </div>
     </div>
 </template>

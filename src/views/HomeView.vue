@@ -1,7 +1,11 @@
 <template>
     <a-layout class="layout-demo">
         <a-layout-sider theme="light" :resize-directions="['right']" :width="220">
-            <div class="logo" />
+            <div class="logo">
+                <router-link to="/">
+                    <span> Noter <icon-pen-fill /></span>
+                </router-link>
+            </div>
             <Menu />
             <br />
             <a-space size="medium" class="button-container">
@@ -20,9 +24,13 @@ import Menu from "../components/Menu/Menu.vue";
 import Content from "../components/Content/Content.vue";
 import NewButton from "../components/Button/NewButton.vue";
 import DeleteButton from "../components/Button/DeleteButton.vue";
+import { IconPenFill } from "@arco-design/web-vue/es/icon";
 </script>
 
 <style scoped>
+span {
+    font-size: 20px; /* 调整为你想要的字号大小 */
+}
 .layout-demo {
     position: absolute;
     top: 0;
