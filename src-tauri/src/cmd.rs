@@ -82,10 +82,3 @@ pub fn get_note_contents(note_key: String) -> String {
     let manager = MANAGER.lock().unwrap();
     manager.get_note_contents(note_key)
 }
-
-#[tauri::command(rename_all = "snake_case")]
-pub fn is_note(key: String) -> bool {
-    // println!("Calling is_note");
-    let manager = MANAGER.lock().unwrap();
-    manager.is_note(key)
-}

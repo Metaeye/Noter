@@ -22,7 +22,7 @@
             <a-form-item field="type" label="Type">
                 <a-radio-group v-model="form.type">
                     <a-radio value="note">Note</a-radio>
-                    <a-radio value="groupB">Group</a-radio>
+                    <a-radio value="group">Group</a-radio>
                 </a-radio-group>
             </a-form-item>
             <a-form-item>

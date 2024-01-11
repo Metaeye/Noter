@@ -19,8 +19,7 @@ fn main() {
                 cmd::remove_group,
                 cmd::get_menu,
                 cmd::get_group_items,
-                cmd::get_groups,
-                cmd::is_note
+                cmd::get_groups
             ]
         )
         .run(tauri::generate_context!())
