@@ -51,7 +51,11 @@ const description = (origin: string): string => {
 };
 
 const beforeInsert = () => {
-    menuStore.insertContent(menuStore.editingNoteKey, newContentName.value.trim());
+    const contentName = newContentName.value.trim();
+    if (contentName === "") {
+        return;
+    }
+    menuStore.insertContent(menuStore.editingNoteKey, contentName);
     menuStore.getNoteContents(menuStore.editingNoteKey);
     newContentName.value = "";
 };
