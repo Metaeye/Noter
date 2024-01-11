@@ -44,10 +44,7 @@ const menuStore = useMenuStore();
 const newContentName = ref("");
 
 const description = (origin: string): string => {
-    if (origin.length > 50) {
-        return origin.slice(0, 50) + "...";
-    }
-    return origin;
+    return origin.length <= 50 ? origin : origin.slice(0, 50) + "...";
 };
 
 const beforeInsert = () => {
